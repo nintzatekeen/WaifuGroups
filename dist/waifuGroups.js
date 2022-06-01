@@ -1,3 +1,4 @@
+import {ServicioPersonajes} from "../servicios/ServicioPersonajes.js";
 
 let NUM_IMAGENES = 2;
 const ALTURA = 150;
@@ -70,6 +71,7 @@ function getImage(src) {
 
 window.onload = () => {
     //  alert("El hippie la chupa");
+    ServicioPersonajes.buscarPersonaje("yukinoshita").then(huelson => console.log(huelson));
     document.getElementById("formulario").addEventListener("submit", async (e) => {
         e.preventDefault();
         width = Number.parseInt(document.getElementById("ancho").value);
