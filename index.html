@@ -4,112 +4,17 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
-        <script src="dist/FileSaver.min.js"></script>
-        <script src="dist/jszip.min.js"></script>
-        <script type="module" src="servicios/ServicioPersonajes.js"></script>
-        <script type="module" src="dist/waifuGroups.js"></script>
+        <link rel="stylesheet" href="./dist/css/estilo.css">
+        <title>WaifuGroups</title>
+        <script src="dist/lib/FileSaver.min.js"></script>
+        <script src="dist/lib/jszip.min.js"></script>
+        <script type="module" src="component/index.js"></script>
         <style>
 
-            @media (min-width: 0px) and (max-width: 800px) {
-                .container {
-                    width: 95%;
-                }
-            }
-            @media (min-width: 801px) {
-                .container {
-                    width: 35%;
-                }
-            }
-
-            html, body {
-                height: 100%;
-            }
-            body {
-                font-family: Arial, Helvetica, sans-serif;
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                align-items: center;
-                background-image: url("assets/fondo.png");
-                background-position: center;
-                background-repeat: no-repeat;
-                background-size: cover;
-            }
-            #submitBtn {
-                display: block;
-                margin: 0 auto;
-            }
-            table {
-                table-layout:fixed;
-            }
-            table, tr, td {
-                width: 100%;
-                height: 100%;
-                border-collapse: collapse;
-            }
-            td > *{
-                margin-top: 1em;
-                margin-bottom: 1em;
-            }
-            .container {
-                background-color: lightsteelblue;
-                padding: 1em;
-                border-radius: 10px;
-            }
-            label, input, select {
-                display: block;
-            }
         </style>
     </head>
     <body>
-        <div class="container">
-            <form method="post" id="formulario" enctype="multipart/form-data">
-
-                <table>
-                    <tr>
-                        <td>
-                            <label for="inp">Suba acá sus weas</label>
-                        </td>
-                        <td>
-                            <input type="file" name="subida" id="inp" accept="image/*" multiple>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label for="numerodewaifus">Número de waifus por grupo</label>
-                        </td>
-                        <td>
-                            <select name="numwaifus" id="numerodewaifus">
-                                <option value="2">2</option>
-                                <option value="3" selected>3</option>
-                                <option value="4">4</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label for="ancho">Anchura(px)</label>
-                        </td>
-                        <td>
-                            <input type="number" name="ancho" id="ancho" required min="1" value="150"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label for="alto">Altura(px)</label>
-                        </td>
-                        <td>
-                            <input type="number" name="alto" id="alto" required min="1" value="100"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <input type="submit" name="submit" id="submitBtn" value="Subir">
-                        </td>
-                    </tr>
-                </table>
-            </form>
+        <div id="root">
         </div>
     </body>
 </html>

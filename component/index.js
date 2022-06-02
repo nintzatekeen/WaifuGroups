@@ -1,4 +1,4 @@
-import {ServicioPersonajes} from "../servicios/ServicioPersonajes.js";
+import {PersonajesService} from "../service/PersonajesService.js";
 
 let NUM_IMAGENES = 2;
 const ALTURA = 150;
@@ -7,6 +7,8 @@ let height;
 let width;
 
 let imagenes;
+
+let timeout = null;
 
 let getDataUrl = (blob => new Promise((resolve, reject) => {
     var a = new FileReader();
@@ -69,10 +71,48 @@ function getImage(src) {
     });
 }
 
+function limpiarElemento(elemento) {
+    if (elemento && elemento.innerHTML) {
+        elemento.innerHTML = "";
+    }
+}
+
+function cambiarResultado(busqueda) {
+    let tablaResultado = document.getElementById("resultado");
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+        PersonajesService.buscarPersonaje(busqueda).then(johnson => {
+            limpiarElemento(tablaResultado);
+            let arregloPersonajes = PersonajesService.formatearPersonajes(johnson);
+            for (const personaje of arregloPersonajes) {
+                let fila = document.createElement("tr");
+                let columnaImagen = document.createElement("td");
+                let img = document.createElement("img");
+                img.src = personaje.imagen;
+                columnaImagen.appendChild(img);
+                fila.appendChild(columnaImagen)
+                let columnaNombre = document.createElement("td");
+                columnaNombre.innerHTML = personaje.nombre;
+                fila.appendChild(columnaNombre);
+                tablaResultado.appendChild(fila);
+            }
+        });
+    }, 333);
+}
+
 window.onload = () => {
-    //  alert("El hippie la chupa");
-    ServicioPersonajes.buscarPersonaje("yukinoshita").then(huelson => console.log(huelson));
-    document.getElementById("formulario").addEventListener("submit", async (e) => {
+
+    let buscador = document.createElement("input");
+    buscador.setAttribute("type", "text");
+    buscador.setAttribute("placeholder", "Buscar waifu");
+    buscador.addEventListener('input', e => cambiarResultado(buscador.value));
+
+    let tablaResultado = document.createElement("table");
+    tablaResultado.setAttribute("id", "resultado");
+    document.getElementById("root").appendChild(buscador);
+    document.getElementById("root").appendChild(tablaResultado);
+
+    /*document.getElementById("formulario").addEventListener("submit", async (e) => {
         e.preventDefault();
         width = Number.parseInt(document.getElementById("ancho").value);
         height = Number.parseInt(document.getElementById("alto").value);
@@ -117,5 +157,5 @@ window.onload = () => {
         }
 
 
-    })
+    })*/
 }
