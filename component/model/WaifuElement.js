@@ -25,7 +25,6 @@ export class WaifuElement extends HTMLElement {
         buscador.style.display = "block";
         buscador.style.margin = "0";
         buscador.style.padding = "0";
-    
 
         let contenedorResultados = document.createElement("div");
         contenedorResultados.style.width = "100%";
@@ -34,22 +33,20 @@ export class WaifuElement extends HTMLElement {
         contenedorResultados.style.flexWrap = "wrap";
         contenedorResultados.style.alignItems = "center";
         contenedorResultados.style.justifyContent = "center";
-        contenedorResultados.style.margin = "0";
+        contenedorResultados.style.margin = "5px 0 0 0";
         contenedorResultados.style.padding = "0";
-
-
-        let tablaResultado = document.createElement("table");
-        tablaResultado.setAttribute("id", "resultado");
-        document.getElementById("root").appendChild(buscador);
-        document.getElementById("root").appendChild(tablaResultado);
-        tablaResultado.style.border = "1px solid black";
-        tablaResultado.style.borderTop = "none";
-        tablaResultado.style.width = "100%";
-        tablaResultado.style.display = "none";
-
+        contenedorResultados.style.display = "none";
+        contenedorResultados.style.overflowY = "scroll";
+        contenedorResultados.style.overflowX = "hidden";
+        contenedorResultados.style.maxHeight = "50vh";
+        contenedorResultados.style.scrollbarWidth = "thin";
+        contenedorResultados.style.scrollbarColor = "MediumVioletRed transparent";
+        contenedorResultados.style.backgroundColor = "white";
+        contenedorResultados.style.borderRadius = "5px";
+        contenedorResultados.id = "resultado";
 
         this.appendChild(buscador);
-        this.appendChild(tablaResultado);
+        this.appendChild(contenedorResultados);
     }
 
     static #limpiarElemento(elemento) {
@@ -59,65 +56,80 @@ export class WaifuElement extends HTMLElement {
     }
     
     #cambiarResultado(busqueda) {
-        let tablaResultado = document.getElementById("resultado");
+        let contenedorResultados = document.getElementById("resultado");
         clearTimeout(this.#timeout);
         if (!busqueda) {
-            this.constructor.#limpiarElemento(tablaResultado);
-            tablaResultado.style.display = "none";
+            this.constructor.#limpiarElemento(contenedorResultados);
+            contenedorResultados.style.display = "none";
         } else {
             this.#timeout = setTimeout(() => {
                 PersonajesService.buscarPersonaje(busqueda).then(johnson => {
-                    this.constructor.#limpiarElemento(tablaResultado);
+                    this.constructor.#limpiarElemento(contenedorResultados);
                     let arregloPersonajes = PersonajesService.formatearPersonajes(johnson);
                     for (const personaje of arregloPersonajes) {
-
-                        // let fila = document.createElement("tr");
-                        // let columnaImagen = document.createElement("td");
-                        // let img = document.createElement("img");
-                        // img.src = personaje.imagen;
-                        // img.style.width = "100%";
-                        // img.style.height = "100%";
-                        // columnaImagen.appendChild(img);
-                        // fila.appendChild(columnaImagen)
-                        // let columnaNombre = document.createElement("td");
-                        // columnaNombre.innerHTML = personaje.nombre;
-                        // fila.appendChild(columnaNombre);
-                        // tablaResultado.appendChild(fila);
-                        // fila.addEventListener("mouseover", event => {
-                        //     fila.style.backgroundColor = "cyan";
-                        //     fila.style.borderColor = "cyan";
-                        //     columnaImagen.style.backgroundColor = "cyan";
-                        //     columnaImagen.style.borderColor = "cyan";
-                        // });
-                        // fila.addEventListener("mouseout", event => {
-                        //     fila.style.backgroundColor = "";
-                        //     fila.style.borderColor = "";
-                        //     columnaImagen.style.backgroundColor = "";
-                        //     columnaImagen.style.borderColor = "";
-                        // });
+                        contenedorResultados.appendChild(this.#obtenerTarjeta(personaje));
                     }
-                    tablaResultado.style.display = "";
+                    contenedorResultados.style.display = "";
                 });
             }, 333);
         }
     }
 
-    #construirTarjeta(personaje) {
+    #obtenerTarjeta(personaje) {
+
+        let colorDeFondo = "white";
+        let colorDeFondoResaltado = "Turquoise";
+
         let tarjeta = document.createElement("div");
         tarjeta.style.width = "100%";
+        tarjeta.style.height = "100px";
         tarjeta.style.display = "flex";
         tarjeta.style.flexDirection = "row";
+        tarjeta.style.alignItems = "center";
+
+
+        tarjeta.style.fontFamily = "Arial";
+
+        tarjeta.dataset.id = personaje.id;
         
         let contenedorImagen = document.createElement("div");
         contenedorImagen.style.margin = "0";
         contenedorImagen.style.padding = "0";
-        contenedorImagen.style.width = "30%";
+        contenedorImagen.style.width = "25%";
+        contenedorImagen.style.height= "90%";
         contenedorImagen.style.display = "block";
         contenedorImagen.style.objectFit = "cover";
         contenedorImagen.style.backgroundImage = `url(${personaje.imagen})`;
-
-        let contenedorNombre = document.createElement("div");
+        contenedorImagen.style.backgroundSize = "100% auto";
+        contenedorImagen.style.backgroundRepeat = "no-repeat";
+        contenedorImagen.style.borderRadius = "5px";
+        contenedorImagen.style.marginLeft = "calc(25%*0.05)";
         
+        let contenedorNombre = document.createElement("div");
+        contenedorNombre.style.margin = "0";
+        contenedorNombre.style.padding = "0";
+        contenedorNombre.style.width = "75%";
+        contenedorNombre.style.display = "flex";
+        contenedorNombre.style.alignItems = "center";
+        contenedorNombre.style.justifyContent = "initial";
+        contenedorNombre.style.textIndent = "1em";
+
+        contenedorNombre.innerHTML = personaje.nombre;
+
+        tarjeta.appendChild(contenedorImagen);
+        tarjeta.appendChild(contenedorNombre);
+
+        tarjeta.addEventListener("mouseover", event => {
+            tarjeta.style.backgroundColor = colorDeFondoResaltado;
+            tarjeta.style.borderRadius = "5px";
+        });
+
+        tarjeta.addEventListener("mouseout", event => {
+            tarjeta.style.backgroundColor = "";
+            tarjeta.style.borderRadius = "";
+        });
+
+        return tarjeta;
     }
 
 }
