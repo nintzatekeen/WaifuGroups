@@ -5,4 +5,16 @@ export class RequestService {
         let response = await fetch(urlObj);
         return response.json();           
     }
+
+    static async POST(url, params) {
+        let response = await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(params),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        return response.json();
+    }
+
 }

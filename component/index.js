@@ -1,4 +1,9 @@
 import {PersonajesService} from "../service/PersonajesService.js";
+import {WaifuElement} from "../component/model/WaifuElement.js";
+
+if(!window.customElements.get('waifu-element')) {
+    window.customElements.define("waifu-element", WaifuElement);
+}
 
 let NUM_IMAGENES = 2;
 const ALTURA = 150;
@@ -101,16 +106,8 @@ function cambiarResultado(busqueda) {
 }
 
 window.onload = () => {
-
-    let buscador = document.createElement("input");
-    buscador.setAttribute("type", "text");
-    buscador.setAttribute("placeholder", "Buscar waifu");
-    buscador.addEventListener('input', e => cambiarResultado(buscador.value));
-
-    let tablaResultado = document.createElement("table");
-    tablaResultado.setAttribute("id", "resultado");
-    document.getElementById("root").appendChild(buscador);
-    document.getElementById("root").appendChild(tablaResultado);
+    let waifuElement = new WaifuElement();
+    document.getElementById("root").appendChild(waifuElement);
 
     /*document.getElementById("formulario").addEventListener("submit", async (e) => {
         e.preventDefault();
