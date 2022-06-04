@@ -3,6 +3,12 @@ import { PersonajesService } from "../../service/PersonajesService.js";
 
 export class WaifuElement extends HTMLElement {
     #timeout;
+    #personajeSeleccionado;
+    #arregloPersonajes;
+
+    get personajeSeleccionado() {
+        return this.#personajeSeleccionado;
+    }
 
     static get #ELEMENT_WIDTH() {
         return 300;
@@ -11,6 +17,7 @@ export class WaifuElement extends HTMLElement {
     constructor () {
         super();
         this.#timeout = null;
+        this.#arregloPersonajes = [];
 
         this.style.width = this.constructor.#ELEMENT_WIDTH + "px";
         this.style.display = "flex";
@@ -25,6 +32,12 @@ export class WaifuElement extends HTMLElement {
         buscador.style.display = "block";
         buscador.style.margin = "0";
         buscador.style.padding = "0";
+
+        buscador.addEventListener('keydown', e => {
+            if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                e.preventDefault();
+            }
+        });
 
         let contenedorResultados = document.createElement("div");
         contenedorResultados.style.width = "100%";
@@ -45,8 +58,63 @@ export class WaifuElement extends HTMLElement {
         contenedorResultados.style.borderRadius = "5px";
         contenedorResultados.id = "resultado";
 
+
+        buscador.addEventListener("focus", e => {
+            if (buscador.value) {
+                contenedorResultados.style.display = "";
+            }
+        });
+
+        
+        window.addEventListener("click", e => {
+                if (e.target !== this && document.querySelector("waifu-element").contains(e.target)) {
+                    contenedorResultados.style.display = "none";
+                }
+        });
+
         this.appendChild(buscador);
         this.appendChild(contenedorResultados);
+
+        contenedorResultados.addEventListener("scroll", e => {
+            if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                e.preventDefault();
+            }
+        });
+
+        this.addEventListener("keydown", e => {
+            if (contenedorResultados && contenedorResultados.style.display != "none") {
+                let tarjetaSeleccionada = contenedorResultados.querySelector(".seleccionado");
+                if (tarjetaSeleccionada) {
+                    let tarjetaSiguiente = null;
+                    if (e.key === "ArrowDown") {//down
+                        let indiceTarjeta = Number.parseInt(tarjetaSeleccionada.dataset.indice);
+                        if (this.#arregloPersonajes.length >= indiceTarjeta + 2) {
+                            tarjetaSeleccionada.classList.remove("seleccionado");
+                            console.log(".waifutarjeta:nth-of-type(" + (indiceTarjeta + 2) + ")");
+                            tarjetaSiguiente = contenedorResultados.querySelector(".waifutarjeta:nth-of-type(" + (indiceTarjeta + 2) + ")");
+                            tarjetaSiguiente.classList.add("seleccionado");
+                        }
+                    }
+                    if (e.key === "ArrowUp") {//up
+                        let indiceTarjeta = Number.parseInt(tarjetaSeleccionada.dataset.indice);
+                        if (indiceTarjeta > 0) {
+                            tarjetaSeleccionada.classList.remove("seleccionado");
+                            tarjetaSiguiente = contenedorResultados.querySelector(".waifutarjeta:nth-of-type(" + (indiceTarjeta) + ")");
+                            tarjetaSiguiente.classList.add("seleccionado");
+                        }
+                    }
+                    if (e.key === "Enter") {
+                        buscador.value = "";
+                        this.constructor.#limpiarElemento(contenedorResultados);
+                        tarjetaSiguiente = null;
+                    }
+                    if (tarjetaSiguiente) {
+                        tarjetaSiguiente.scrollIntoView({behavior: "smooth", block: "center"});
+                    }
+                }
+            }
+            
+        });
     }
 
     static #limpiarElemento(elemento) {
@@ -59,15 +127,23 @@ export class WaifuElement extends HTMLElement {
         let contenedorResultados = document.getElementById("resultado");
         clearTimeout(this.#timeout);
         if (!busqueda) {
+            this.#arregloPersonajes = [];
             this.constructor.#limpiarElemento(contenedorResultados);
             contenedorResultados.style.display = "none";
         } else {
             this.#timeout = setTimeout(() => {
                 PersonajesService.buscarPersonaje(busqueda).then(johnson => {
                     this.constructor.#limpiarElemento(contenedorResultados);
-                    let arregloPersonajes = PersonajesService.formatearPersonajes(johnson);
-                    for (const personaje of arregloPersonajes) {
-                        contenedorResultados.appendChild(this.#obtenerTarjeta(personaje));
+                    this.#personajeSeleccionado = null;
+                    this.#arregloPersonajes = PersonajesService.formatearPersonajes(johnson);
+                    let ind = 0;
+                    for (const personaje of this.#arregloPersonajes) {
+                        contenedorResultados.appendChild(this.#obtenerTarjeta(personaje, ind++));
+                    }
+                    let primeraTarjeta = contenedorResultados.querySelector(".waifutarjeta:nth-of-type(1)");
+                    if (primeraTarjeta) {
+                        primeraTarjeta.classList.add("seleccionado");
+                        this.#personajeSeleccionado = primeraTarjeta;
                     }
                     contenedorResultados.style.display = "";
                 });
@@ -75,9 +151,7 @@ export class WaifuElement extends HTMLElement {
         }
     }
 
-    #obtenerTarjeta(personaje) {
-
-        let colorDeFondo = "white";
+    #obtenerTarjeta(personaje, indice) {
         let colorDeFondoResaltado = "Turquoise";
 
         let tarjeta = document.createElement("div");
@@ -87,10 +161,19 @@ export class WaifuElement extends HTMLElement {
         tarjeta.style.flexDirection = "row";
         tarjeta.style.alignItems = "center";
 
+        if (tarjeta.classList.contains("seleccionado")) {
+            tarjeta.style.backgroundColor = colorDeFondoResaltado;
+        } else {
+            tarjeta.style.backgroundColor = "";
+        }
+
 
         tarjeta.style.fontFamily = "Arial";
 
         tarjeta.dataset.id = personaje.id;
+        tarjeta.dataset.indice = indice;
+
+        tarjeta.classList.add("waifutarjeta");
         
         let contenedorImagen = document.createElement("div");
         contenedorImagen.style.margin = "0";
@@ -119,14 +202,23 @@ export class WaifuElement extends HTMLElement {
         tarjeta.appendChild(contenedorImagen);
         tarjeta.appendChild(contenedorNombre);
 
-        tarjeta.addEventListener("mouseover", event => {
-            tarjeta.style.backgroundColor = colorDeFondoResaltado;
-            tarjeta.style.borderRadius = "5px";
+        tarjeta.addEventListener("mouseover", e => {
+                let tarjetaSeleccionada = document.querySelector(".waifutarjeta.seleccionado");
+                if (tarjetaSeleccionada) {
+                    tarjetaSeleccionada.classList.remove("seleccionado");
+                }
+                tarjeta.classList.add("seleccionado");
         });
 
-        tarjeta.addEventListener("mouseout", event => {
-            tarjeta.style.backgroundColor = "";
-            tarjeta.style.borderRadius = "";
+        tarjeta.addEventListener("click", e => {
+            e.stopPropagation();
+            if(tarjeta.parentElement) {
+                let padre = tarjeta.parentElement;
+                if (padre.previousSibling) {
+                    padre.previousSibling.value = "";
+                }
+                this.constructor.#limpiarElemento(padre);
+            }
         });
 
         return tarjeta;

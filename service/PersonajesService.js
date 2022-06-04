@@ -16,7 +16,6 @@ export class PersonajesService {
             let datos = jsonRespuesta.data;
             if (datos) {
                 for (const personajeCompleto of datos) {
-                    console.log(personajeCompleto);
                     arregloPersonajes.push(new Personaje(personajeCompleto));
                 }
             }

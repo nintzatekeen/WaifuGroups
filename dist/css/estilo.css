@@ -1,3 +1,25 @@
 #resultado > tr > td > img {
     width: 50px;
 }
+#resultado::-webkit-scrollbar {
+    border-radius: 0 5px 5px 0;
+    width: 8.5px;
+}
+
+#resultado::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background-color: mediumvioletred;
+}
+
+#resultado::-webkit-scrollbar-track {
+    border-radius: 5px;
+    background-color: transparent;
+}
+
+body {
+    background-color: lightgray;
+}
+
+.waifutarjeta.seleccionado {
+    background-color: turquoise;
+}
