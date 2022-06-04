@@ -5,6 +5,7 @@ export class WaifuElement extends HTMLElement {
     #timeout;
     #personajeSeleccionado;
     #arregloPersonajes;
+    #paginacion;
 
     get personajeSeleccionado() {
         return this.#personajeSeleccionado;
@@ -133,6 +134,8 @@ export class WaifuElement extends HTMLElement {
         } else {
             this.#timeout = setTimeout(() => {
                 PersonajesService.buscarPersonaje(busqueda).then(johnson => {
+                    this.#paginacion = johnson.pagination;
+
                     this.constructor.#limpiarElemento(contenedorResultados);
                     this.#personajeSeleccionado = null;
                     this.#arregloPersonajes = PersonajesService.formatearPersonajes(johnson);
@@ -140,6 +143,17 @@ export class WaifuElement extends HTMLElement {
                     for (const personaje of this.#arregloPersonajes) {
                         contenedorResultados.appendChild(this.#obtenerTarjeta(personaje, ind++));
                     }
+
+                    let hasNextPage = this.#paginacion.has_next_page;
+                    let currentPage = this.#paginacion.current_page;
+
+                    if (hasNextPage) {
+                        //TODO: implementar paginación
+                        contenedorResultados.appendChild(this.#etiquetaCargando())
+
+
+                    }
+
                     let primeraTarjeta = contenedorResultados.querySelector(".waifutarjeta:nth-of-type(1)");
                     if (primeraTarjeta) {
                         primeraTarjeta.classList.add("seleccionado");
@@ -222,6 +236,25 @@ export class WaifuElement extends HTMLElement {
         });
 
         return tarjeta;
+    }
+
+    #etiquetaCargando() {
+        let etiqueta = document.createElement("div");
+        etiqueta.style.width = "100%";
+        let icono = document.createElement("div");
+        icono.classList.add("lds-spinner");
+        icono.innerHTML = "<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>";
+        etiqueta.style.display = "flex";
+        etiqueta.style.justifyContent = "center";
+        etiqueta.style.alignItems = "center";
+        etiqueta.style.height = "100px";
+        etiqueta.style.margin = "0";
+        etiqueta.style.padding = "0";
+        etiqueta.style.overflowY = "hidden";
+
+        etiqueta.appendChild(icono);
+
+        return etiqueta;
     }
 
 }
