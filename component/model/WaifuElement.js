@@ -70,7 +70,7 @@ export class WaifuElement extends HTMLElement {
 
         
         window.addEventListener("click", e => {
-                if (e.target !== this && document.querySelector("waifu-element").contains(e.target)) {
+                if (e.target !== this && !document.querySelector("waifu-element").contains(e.target)) {
                     contenedorResultados.style.display = "none";
                 }
         });
