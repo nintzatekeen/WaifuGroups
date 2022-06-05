@@ -2,11 +2,15 @@ import { RequestService } from "./RequestService.js";
 import { Personaje } from "../component/model/Personaje.js";
 
 export class PersonajesService {
-    static async buscarPersonaje(nombre) {
+    static async buscarPersonaje(parametros) {
+        if (!parametros) {
+            return [];
+        }
         let johnson = await RequestService.GET("https://api.jikan.moe/v4/characters", 
-        {q: nombre,
+        {q: parametros.nombre ? parametros.nombre : "",
         order_by: "favorites",
-        sort: "desc"});
+        sort: "desc",
+        page: parametros.pagina ? parametros.pagina : 1});
         return johnson;
     }
     

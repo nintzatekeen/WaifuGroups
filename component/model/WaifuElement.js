@@ -60,6 +60,7 @@ export class WaifuElement extends HTMLElement {
         contenedorResultados.id = "resultado";
 
 
+
         buscador.addEventListener("focus", e => {
             if (buscador.value) {
                 contenedorResultados.style.display = "";
@@ -80,6 +81,23 @@ export class WaifuElement extends HTMLElement {
             if (e.key === "ArrowUp" || e.key === "ArrowDown") {
                 e.preventDefault();
             }
+
+            clearTimeout(this.#timeout);
+
+            this.#timeout = setTimeout(() => {
+                let scrollTop = contenedorResultados.scrollTop;
+                let scrollHeight = contenedorResultados.scrollHeight; // added
+                let offsetHeight = contenedorResultados.offsetHeight;
+                // let clientHeight = contenedorResultados.clientHeight;
+                let contentHeight = scrollHeight - offsetHeight; // added
+                if (contentHeight <= scrollTop + 200) // modified
+                {
+                    // Now this is called when scroll end!
+                    this.#cargarMasPersonajes(buscador.value);
+                }
+            }, 333);
+            
+
         });
 
         this.addEventListener("keydown", e => {
@@ -133,7 +151,9 @@ export class WaifuElement extends HTMLElement {
             contenedorResultados.style.display = "none";
         } else {
             this.#timeout = setTimeout(() => {
-                PersonajesService.buscarPersonaje(busqueda).then(johnson => {
+                PersonajesService.buscarPersonaje({
+                    nombre: busqueda
+                }).then(johnson => {
                     this.#paginacion = johnson.pagination;
 
                     this.constructor.#limpiarElemento(contenedorResultados);
@@ -252,9 +272,50 @@ export class WaifuElement extends HTMLElement {
         etiqueta.style.padding = "0";
         etiqueta.style.overflowY = "hidden";
 
+        etiqueta.id = "waifucargando";
+
         etiqueta.appendChild(icono);
 
         return etiqueta;
+    }
+
+    #cargarMasPersonajes(nombre) {
+
+        let etiquetaCarga = document.getElementById("waifucargando");
+        let listaWaifus = document.getElementById("resultado");
+
+
+        let hasNextPage = this.#paginacion.has_next_page;
+        let currentPage = this.#paginacion.current_page;
+        let pagina = currentPage + 1;
+        if (hasNextPage) {
+            PersonajesService.buscarPersonaje({
+                nombre: nombre,
+                pagina: pagina
+            }).then(nuevos => {
+                if (nuevos) {
+                    this.#paginacion = nuevos.pagination;
+                    let masWaifus = PersonajesService.formatearPersonajes(nuevos);
+                    this.#arregloPersonajes = this.#arregloPersonajes.concat(masWaifus);
+                    
+                    let arregloElementosWaifu = document.querySelectorAll("#resultado > .waifutarjeta");
+                    let ultimoElementoWaifu = arregloElementosWaifu[arregloElementosWaifu.length - 1];
+
+                    let ultimoIndice = Number.parseInt(ultimoElementoWaifu.dataset.indice);
+                    let indice = ultimoIndice + 1;
+                    listaWaifus.removeChild(etiquetaCarga);
+                    for (const waifu of masWaifus) {
+                        listaWaifus.appendChild(this.#obtenerTarjeta(waifu, indice++));
+                    }
+    
+                    if (nuevos.pagination.has_next_page) {
+                        listaWaifus.appendChild(this.#etiquetaCargando());
+                    }
+                }
+            });
+
+        }
+        console.log(this.#paginacion);
     }
 
 }
