@@ -6,6 +6,7 @@ export class WaifuElement extends HTMLElement {
     #personajeSeleccionado;
     #arregloPersonajes;
     #paginacion;
+    #promesaCargaWaifus;
 
     get personajeSeleccionado() {
         return this.#personajeSeleccionado;
@@ -82,9 +83,8 @@ export class WaifuElement extends HTMLElement {
                 e.preventDefault();
             }
 
-            clearTimeout(this.#timeout);
-
-            this.#timeout = setTimeout(() => {
+            console.log(this.#promesaCargaWaifus);
+            if (!this.#promesaCargaWaifus) {
                 let scrollTop = contenedorResultados.scrollTop;
                 let scrollHeight = contenedorResultados.scrollHeight; // added
                 let offsetHeight = contenedorResultados.offsetHeight;
@@ -93,9 +93,24 @@ export class WaifuElement extends HTMLElement {
                 if (contentHeight <= scrollTop + 200) // modified
                 {
                     // Now this is called when scroll end!
-                    this.#cargarMasPersonajes(buscador.value);
+                    this.#promesaCargaWaifus = this.#cargarMasPersonajes(buscador.value).then(() => {
+                        this.#promesaCargaWaifus = null;
+                    });
                 }
-            }, 333);
+            }
+
+            // this.#timeout = setTimeout(() => {
+            //     let scrollTop = contenedorResultados.scrollTop;
+            //     let scrollHeight = contenedorResultados.scrollHeight; // added
+            //     let offsetHeight = contenedorResultados.offsetHeight;
+            //     // let clientHeight = contenedorResultados.clientHeight;
+            //     let contentHeight = scrollHeight - offsetHeight; // added
+            //     if (contentHeight <= scrollTop + 200) // modified
+            //     {
+            //         // Now this is called when scroll end!
+            //         this.#cargarMasPersonajes(buscador.value);
+            //     }
+            // }, 333);
             
 
         });
@@ -143,6 +158,7 @@ export class WaifuElement extends HTMLElement {
     }
     
     #cambiarResultado(busqueda) {
+        this.#promesaCargaWaifus = null;
         let contenedorResultados = document.getElementById("resultado");
         clearTimeout(this.#timeout);
         if (!busqueda) {
@@ -180,6 +196,7 @@ export class WaifuElement extends HTMLElement {
                         this.#personajeSeleccionado = primeraTarjeta;
                     }
                     contenedorResultados.style.display = "";
+                    contenedorResultados.scrollTo(0,0);
                 });
             }, 333);
         }
@@ -280,42 +297,52 @@ export class WaifuElement extends HTMLElement {
     }
 
     #cargarMasPersonajes(nombre) {
+        return new Promise((resolve, reject) => {
 
-        let etiquetaCarga = document.getElementById("waifucargando");
-        let listaWaifus = document.getElementById("resultado");
-
-
-        let hasNextPage = this.#paginacion.has_next_page;
-        let currentPage = this.#paginacion.current_page;
-        let pagina = currentPage + 1;
-        if (hasNextPage) {
-            PersonajesService.buscarPersonaje({
-                nombre: nombre,
-                pagina: pagina
-            }).then(nuevos => {
-                if (nuevos) {
-                    this.#paginacion = nuevos.pagination;
-                    let masWaifus = PersonajesService.formatearPersonajes(nuevos);
-                    this.#arregloPersonajes = this.#arregloPersonajes.concat(masWaifus);
-                    
-                    let arregloElementosWaifu = document.querySelectorAll("#resultado > .waifutarjeta");
-                    let ultimoElementoWaifu = arregloElementosWaifu[arregloElementosWaifu.length - 1];
-
-                    let ultimoIndice = Number.parseInt(ultimoElementoWaifu.dataset.indice);
-                    let indice = ultimoIndice + 1;
-                    listaWaifus.removeChild(etiquetaCarga);
-                    for (const waifu of masWaifus) {
-                        listaWaifus.appendChild(this.#obtenerTarjeta(waifu, indice++));
-                    }
-    
-                    if (nuevos.pagination.has_next_page) {
-                        listaWaifus.appendChild(this.#etiquetaCargando());
-                    }
+            try {
+                let etiquetaCarga = document.getElementById("waifucargando");
+                let listaWaifus = document.getElementById("resultado");
+        
+        
+                let hasNextPage = this.#paginacion.has_next_page;
+                let currentPage = this.#paginacion.current_page;
+                let pagina = currentPage + 1;
+                if (hasNextPage) {
+                    PersonajesService.buscarPersonaje({
+                        nombre: nombre,
+                        pagina: pagina
+                    }).then(nuevos => {
+                        if (nuevos) {
+                            this.#paginacion = nuevos.pagination;
+                            let masWaifus = PersonajesService.formatearPersonajes(nuevos);
+                            this.#arregloPersonajes = this.#arregloPersonajes.concat(masWaifus);
+                            
+                            let arregloElementosWaifu = document.querySelectorAll("#resultado > .waifutarjeta");
+                            let ultimoElementoWaifu = arregloElementosWaifu[arregloElementosWaifu.length - 1];
+        
+                            let ultimoIndice = Number.parseInt(ultimoElementoWaifu.dataset.indice);
+                            let indice = ultimoIndice + 1;
+                            listaWaifus.removeChild(etiquetaCarga);
+                            for (const waifu of masWaifus) {
+                                let repetido = listaWaifus.querySelector(`.waifutarjeta[data-id='${waifu.id}']`);
+                                if (!repetido) {
+                                    listaWaifus.appendChild(this.#obtenerTarjeta(waifu, indice++));
+                                }
+                            }
+            
+                            if (nuevos.pagination.has_next_page) {
+                                listaWaifus.appendChild(this.#etiquetaCargando());
+                            }
+                        }
+                        resolve(true);
+                    });
+        
                 }
-            });
+            } catch (error) {
+                reject(error);
+            }
 
-        }
-        console.log(this.#paginacion);
+        });
     }
 
 }
