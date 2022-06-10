@@ -3,11 +3,16 @@ import { PersonajesService } from "../../service/PersonajesService.js";
 
 export class WaifuElement extends HTMLElement {
     #timeout;
+    #tarjetaSeleccionada;
     #personajeSeleccionado;
     #arregloPersonajes;
     #paginacion;
     #promesaCargaWaifus;
 
+    get tarjetaSeleccionada() {
+        return this.#tarjetaSeleccionada;
+    }
+    
     get personajeSeleccionado() {
         return this.#personajeSeleccionado;
     }
@@ -138,9 +143,17 @@ export class WaifuElement extends HTMLElement {
                         }
                     }
                     if (e.key === "Enter") {
+                        if (this.#promesaCargaWaifus)
+                            this.#promesaCargaWaifus = null;
                         buscador.value = "";
                         this.constructor.#limpiarElemento(contenedorResultados);
                         tarjetaSiguiente = null;
+                        try {
+                            this.#personajeSeleccionado = this.#arregloPersonajes.filter(p => p.id === Number.parseInt(tarjetaSeleccionada.dataset.id))[0];   
+                        } catch (error) {
+                            console.error(error);
+                        }
+                        
                     }
                     if (tarjetaSiguiente) {
                         tarjetaSiguiente.scrollIntoView({behavior: "smooth", block: "center"});
@@ -158,6 +171,7 @@ export class WaifuElement extends HTMLElement {
     }
     
     #cambiarResultado(busqueda) {
+        this.#personajeSeleccionado = null;
         this.#promesaCargaWaifus = null;
         let contenedorResultados = document.getElementById("resultado");
         clearTimeout(this.#timeout);
@@ -173,7 +187,8 @@ export class WaifuElement extends HTMLElement {
                     this.#paginacion = johnson.pagination;
 
                     this.constructor.#limpiarElemento(contenedorResultados);
-                    this.#personajeSeleccionado = null;
+                    this.#tarjetaSeleccionada
+             = null;
                     this.#arregloPersonajes = PersonajesService.formatearPersonajes(johnson);
                     let ind = 0;
                     for (const personaje of this.#arregloPersonajes) {
@@ -193,7 +208,8 @@ export class WaifuElement extends HTMLElement {
                     let primeraTarjeta = contenedorResultados.querySelector(".waifutarjeta:nth-of-type(1)");
                     if (primeraTarjeta) {
                         primeraTarjeta.classList.add("seleccionado");
-                        this.#personajeSeleccionado = primeraTarjeta;
+                        this.#tarjetaSeleccionada
+                 = primeraTarjeta;
                     }
                     contenedorResultados.style.display = "";
                     contenedorResultados.scrollTo(0,0);
@@ -264,11 +280,18 @@ export class WaifuElement extends HTMLElement {
         tarjeta.addEventListener("click", e => {
             e.stopPropagation();
             if(tarjeta.parentElement) {
+                if (this.#promesaCargaWaifus)
+                    this.#promesaCargaWaifus = null;
                 let padre = tarjeta.parentElement;
                 if (padre.previousSibling) {
                     padre.previousSibling.value = "";
                 }
                 this.constructor.#limpiarElemento(padre);
+            }
+            try {
+                this.#personajeSeleccionado = this.#arregloPersonajes.filter(p => p.id == Number.parseInt(tarjeta.dataset.id))[0];
+            } catch (error) {
+                console.error(error);
             }
         });
 
