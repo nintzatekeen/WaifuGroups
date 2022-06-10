@@ -8,6 +8,7 @@ export class WaifuElement extends HTMLElement {
     #arregloPersonajes;
     #paginacion;
     #promesaCargaWaifus;
+    #retrollamada;
 
     get tarjetaSeleccionada() {
         return this.#tarjetaSeleccionada;
@@ -23,6 +24,7 @@ export class WaifuElement extends HTMLElement {
 
     constructor () {
         super();
+        this.#retrollamada = () => {};
         this.#timeout = null;
         this.#arregloPersonajes = [];
 
@@ -153,7 +155,7 @@ export class WaifuElement extends HTMLElement {
                         } catch (error) {
                             console.error(error);
                         }
-                        
+                        this.#retrollamada(this.#personajeSeleccionado);
                     }
                     if (tarjetaSiguiente) {
                         tarjetaSiguiente.scrollIntoView({behavior: "smooth", block: "center"});
@@ -293,6 +295,7 @@ export class WaifuElement extends HTMLElement {
             } catch (error) {
                 console.error(error);
             }
+            this.#retrollamada(this.#personajeSeleccionado);
         });
 
         return tarjeta;
@@ -368,4 +371,9 @@ export class WaifuElement extends HTMLElement {
         });
     }
 
+
+    alSeleccionar(retrollamada) {
+        if (retrollamada)
+            this.#retrollamada = retrollamada;
+    }
 }
