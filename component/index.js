@@ -107,6 +107,7 @@ function cambiarResultado(busqueda) {
 
 window.onload = () => {
     let waifuElement = new WaifuElement();
+    waifuElement.alSeleccionar(console.log);
     document.getElementById("root").appendChild(waifuElement);
 
     /*document.getElementById("formulario").addEventListener("submit", async (e) => {

@@ -2,6 +2,8 @@ import { PersonajesService } from "../../service/PersonajesService.js";
 
 
 export class WaifuElement extends HTMLElement {
+    ALTURA_BUSCADOR = "1.5em";
+
     #timeout;
     #tarjetaSeleccionada;
     #personajeSeleccionado;
@@ -9,6 +11,7 @@ export class WaifuElement extends HTMLElement {
     #paginacion;
     #promesaCargaWaifus;
     #retrollamada;
+    #exclusiones;
 
     get tarjetaSeleccionada() {
         return this.#tarjetaSeleccionada;
@@ -30,8 +33,10 @@ export class WaifuElement extends HTMLElement {
 
         this.style.width = this.constructor.#ELEMENT_WIDTH + "px";
         this.style.display = "flex";
-        this.style.alignItems = "center";
+        this.style.alignItems = "start";
         this.style.flexWrap = "wrap";
+        this.style.height = "500px";
+        this.style.width = "200px";
 
         let buscador = document.createElement("input");
         buscador.setAttribute("type", "text");
@@ -41,6 +46,7 @@ export class WaifuElement extends HTMLElement {
         buscador.style.display = "block";
         buscador.style.margin = "0";
         buscador.style.padding = "0";
+        buscador.style.height = this.ALTURA_BUSCADOR;
 
         buscador.addEventListener('keydown', e => {
             if (e.key === "ArrowUp" || e.key === "ArrowDown") {
@@ -60,7 +66,7 @@ export class WaifuElement extends HTMLElement {
         contenedorResultados.style.display = "none";
         contenedorResultados.style.overflowY = "scroll";
         contenedorResultados.style.overflowX = "hidden";
-        contenedorResultados.style.maxHeight = "50vh";
+        contenedorResultados.style.height = `calc(100% - ${this.ALTURA_BUSCADOR})`;
         contenedorResultados.style.scrollbarWidth = "thin";
         contenedorResultados.style.scrollbarColor = "MediumVioletRed transparent";
         contenedorResultados.style.backgroundColor = "white";
@@ -90,7 +96,6 @@ export class WaifuElement extends HTMLElement {
                 e.preventDefault();
             }
 
-            console.log(this.#promesaCargaWaifus);
             if (!this.#promesaCargaWaifus) {
                 let scrollTop = contenedorResultados.scrollTop;
                 let scrollHeight = contenedorResultados.scrollHeight; // added
@@ -131,7 +136,6 @@ export class WaifuElement extends HTMLElement {
                         let indiceTarjeta = Number.parseInt(tarjetaSeleccionada.dataset.indice);
                         if (this.#arregloPersonajes.length >= indiceTarjeta + 2) {
                             tarjetaSeleccionada.classList.remove("seleccionado");
-                            console.log(".waifutarjeta:nth-of-type(" + (indiceTarjeta + 2) + ")");
                             tarjetaSiguiente = contenedorResultados.querySelector(".waifutarjeta:nth-of-type(" + (indiceTarjeta + 2) + ")");
                             tarjetaSiguiente.classList.add("seleccionado");
                         }
@@ -189,29 +193,26 @@ export class WaifuElement extends HTMLElement {
                     this.#paginacion = johnson.pagination;
 
                     this.constructor.#limpiarElemento(contenedorResultados);
-                    this.#tarjetaSeleccionada
-             = null;
+                    this.#tarjetaSeleccionada = null;
                     this.#arregloPersonajes = PersonajesService.formatearPersonajes(johnson);
                     let ind = 0;
                     for (const personaje of this.#arregloPersonajes) {
-                        contenedorResultados.appendChild(this.#obtenerTarjeta(personaje, ind++));
+                        if (!this.#estaExcluido(personaje)) {
+                            contenedorResultados.appendChild(this.#obtenerTarjeta(personaje, ind++));
+                        }
                     }
 
                     let hasNextPage = this.#paginacion.has_next_page;
                     let currentPage = this.#paginacion.current_page;
 
                     if (hasNextPage) {
-                        //TODO: implementar paginación
                         contenedorResultados.appendChild(this.#etiquetaCargando())
-
-
                     }
 
                     let primeraTarjeta = contenedorResultados.querySelector(".waifutarjeta:nth-of-type(1)");
                     if (primeraTarjeta) {
                         primeraTarjeta.classList.add("seleccionado");
-                        this.#tarjetaSeleccionada
-                 = primeraTarjeta;
+                        this.#tarjetaSeleccionada = primeraTarjeta;
                     }
                     contenedorResultados.style.display = "";
                     contenedorResultados.scrollTo(0,0);
@@ -345,22 +346,26 @@ export class WaifuElement extends HTMLElement {
                             
                             let arregloElementosWaifu = document.querySelectorAll("#resultado > .waifutarjeta");
                             let ultimoElementoWaifu = arregloElementosWaifu[arregloElementosWaifu.length - 1];
-        
-                            let ultimoIndice = Number.parseInt(ultimoElementoWaifu.dataset.indice);
-                            let indice = ultimoIndice + 1;
-                            listaWaifus.removeChild(etiquetaCarga);
-                            for (const waifu of masWaifus) {
-                                let repetido = listaWaifus.querySelector(`.waifutarjeta[data-id='${waifu.id}']`);
-                                if (!repetido) {
-                                    listaWaifus.appendChild(this.#obtenerTarjeta(waifu, indice++));
+                            
+                            if (ultimoElementoWaifu) {
+                                let ultimoIndice = Number.parseInt(ultimoElementoWaifu.dataset.indice);
+                                let indice = ultimoIndice + 1;
+                                listaWaifus.removeChild(etiquetaCarga);
+                                for (const waifu of masWaifus) {
+                                    let repetido = listaWaifus.querySelector(`.waifutarjeta[data-id='${waifu.id}']`);
+                                    if (!repetido && !this.#estaExcluido(personaje)) {
+                                        listaWaifus.appendChild(this.#obtenerTarjeta(waifu, indice++));
+                                    }
                                 }
-                            }
-            
-                            if (nuevos.pagination.has_next_page) {
-                                listaWaifus.appendChild(this.#etiquetaCargando());
+                
+                                if (nuevos.pagination.has_next_page) {
+                                    listaWaifus.appendChild(this.#etiquetaCargando());
+                                }
+                                resolve(true);
+                            } else {
+                                resolve(false);
                             }
                         }
-                        resolve(true);
                     });
         
                 }
@@ -375,5 +380,40 @@ export class WaifuElement extends HTMLElement {
     alSeleccionar(retrollamada) {
         if (retrollamada)
             this.#retrollamada = retrollamada;
+    }
+
+    anadirExclusiones(exclusiones) {
+        this.#exclusiones = exclusiones;
+    }
+    
+    anadirExclusion(exclusion) {
+        if (this.#exclusiones) {
+            this.#exclusiones.push(exclusion);
+        } else {
+            this.#exclusiones = [exclusion];
+        }
+    }
+
+    eliminarExclusion(exclusion) {
+        if (this.#exclusiones) {
+            let personajesExcluidos = this.#exclusiones.filter(pex => pex && pex.id && pex.id == exclusion.id);
+            if (personajesExcluidos) {
+                for (const personajeExluido of personajesExcluidos) {
+                    let indiceDelElemento = this.#exclusiones.indexOf(personajeExluido);
+                    this.#exclusiones.splice(indiceDelElemento, 1);
+                }
+            }
+        }
+    }
+
+    limpiarExclusiones() {
+        this.#exclusiones = [];
+    }
+
+    #estaExcluido(personaje) {
+        if (this.#exclusiones) {
+            return this.#exclusiones.filter(pex => pex && pex.id && pex.id == personaje.id).length > 0;
+        }
+        return false;
     }
 }
