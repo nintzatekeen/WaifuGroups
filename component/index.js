@@ -1,8 +1,12 @@
 import {PersonajesService} from "../service/PersonajesService.js";
-import {WaifuElement} from "../component/model/WaifuElement.js";
+import {WaifuElement} from "../component/WaifuElement.js";
+import {TablaWaifusElement} from "../component/TablaWaifusElement.js";
 
 if(!window.customElements.get('waifu-element')) {
     window.customElements.define("waifu-element", WaifuElement);
+}
+if(!window.customElements.get('tabla-waifus')) {
+    window.customElements.define("tabla-waifus", TablaWaifusElement);
 }
 
 let NUM_IMAGENES = 2;

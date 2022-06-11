@@ -1,4 +1,4 @@
-import { PersonajesService } from "../../service/PersonajesService.js";
+import { PersonajesService } from "../service/PersonajesService.js";
 
 
 export class WaifuElement extends HTMLElement {
@@ -32,9 +32,9 @@ export class WaifuElement extends HTMLElement {
         this.#arregloPersonajes = [];
 
         this.style.width = this.constructor.#ELEMENT_WIDTH + "px";
-        this.style.display = "flex";
-        this.style.alignItems = "start";
-        this.style.flexWrap = "wrap";
+        this.style.display = "block";
+        // this.style.alignItems = "start";
+        // this.style.flexWrap = "wrap";
         this.style.height = "500px";
         this.style.width = "200px";
 
@@ -66,7 +66,7 @@ export class WaifuElement extends HTMLElement {
         contenedorResultados.style.display = "none";
         contenedorResultados.style.overflowY = "scroll";
         contenedorResultados.style.overflowX = "hidden";
-        contenedorResultados.style.height = `calc(100% - ${this.ALTURA_BUSCADOR})`;
+        contenedorResultados.style.maxHeight = `calc(100% - ${this.ALTURA_BUSCADOR})`;
         contenedorResultados.style.scrollbarWidth = "thin";
         contenedorResultados.style.scrollbarColor = "MediumVioletRed transparent";
         contenedorResultados.style.backgroundColor = "white";
@@ -265,7 +265,7 @@ export class WaifuElement extends HTMLElement {
         contenedorNombre.style.display = "flex";
         contenedorNombre.style.alignItems = "center";
         contenedorNombre.style.justifyContent = "initial";
-        contenedorNombre.style.textIndent = "1em";
+        contenedorNombre.style.marginLeft = "1em";
 
         contenedorNombre.innerHTML = personaje.nombre;
 
